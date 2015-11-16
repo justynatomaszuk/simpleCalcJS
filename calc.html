@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Prosty kalkulator</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="description" content="Simple Calculator by Justyna Tomaszuk">
+	<meta name="keywords" content="calc, kalkulator, Justyna, Tomaszuk">
+	<meta name="author" content="Justyna Tomaszuk">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="jquery.js"></script>
+<script>
+function wyczysc() {
+	$( "#result" ).val( '' ).css( 'color', 'black' );
+}
+
+function wyswietlBlad( t ) {
+	$( "#result" ).val( t ).css( 'color', 'red' );
+	window.setTimeout( wyczysc, 3000 );
+}
+
+$( document ).ready(function() {
+	$( "#contener" ).fadeIn( 1500 );
+	$(document).keyup(function( e ) {
+		if ( e.keyCode == 27 ) {// esc 
+			wyczysc();
+		}
+	});
+	$( "#result" ).focus();
+	$( "input[type=button]" ).click(function() {
+		var result = $( "#result" ).val();
+		var text = $( this ).val();
+		$( "#result" ).val( result + text );
+		$( "#result" ).focus();
+	});
+	$( "#cancel" ).click(function() {
+		wyczysc();
+	});
+	$( "#equal" ).click(function() {
+		var poprawneDzialanie = true;
+		var op = $( "#result" ).val().split('='); // markowanie znaku =
+		var opadd = op[0].split('+');
+		var opsub = op[0].split('-');
+		var opmul = op[0].split('×');
+		var opdiv = op[0].split('÷');
+		if (opadd[1] !== undefined) {
+			var end = parseFloat( opadd[0] ) + parseFloat( opadd[1] );
+		} else if (opsub[1] !== undefined) {
+			var end = parseFloat( opsub[0] ) - parseFloat( opsub[1] );
+		} else if (opmul[1] !== undefined) {
+			var end = parseFloat( opmul[0] ) * parseFloat( opmul[1] );
+		} else if (opdiv[1] !== undefined) {
+			if (opdiv[1] == '') {
+				var end = "blad";
+				poprawneDzialanie = false;
+			}
+			else if (opdiv[1] == 0) {
+				var end = "dzielenie przez 0";
+				poprawneDzialanie = false;
+			} else {
+				var end = parseFloat( opdiv[0] ) / parseFloat( opdiv[1] );
+			}
+		} else {
+			var end = "niepoprawne działanie";
+			poprawneDzialanie = false;		
+		}
+		if ( (opadd[2] !== undefined) || (opsub[2] !== undefined) || (opmul[2] !== undefined) || (opdiv[2] !== undefined) ) {
+			var end = "za dużo operatorów";
+			poprawneDzialanie = false;
+		}
+		if (poprawneDzialanie) {
+			if (isNaN(end)) { // najdziwniejsze przypadki
+				wyswietlBlad( "błąd" );
+			} else {
+				end = Math.round(end*1000000)/1000000;
+				$( "#result" ).val( end );
+					if (typeof(Storage) != "undefined") {
+							localStorage.setItem("wynik", end);
+					}
+			}
+		} else {
+			wyswietlBlad( end );
+		}
+	});
+	$( "#showhistory" ).click(function() {
+		var ostatni = localStorage.getItem("wynik");
+		$( "#history" ).fadeToggle( "slow", function() {
+			if (ostatni == null) {
+				$( "#last" ).text( "Historia wyczyszczona");
+				$( "#delete" ).hide();
+			} else {
+				$( "#delete" ).show();
+				$( "#last" ).text( "Twój wynik ostatni to " + ostatni);
+			}
+  	});
+	});
+	$( "#delete" ).click(function() {
+		localStorage.clear();
+		$( "#history" ).fadeOut( "slow" );
+	});
+});
+</script>
+</head>
+<body>
+	<div id="contener">
+		<input type="text" id="result"><input type="button" value="C" id="cancel"><br>
+		<input type="button" value="1" id="k1"><input type="button" value="2" id="k2"><input type="button" value="3" id="k3"><input type="button" value="÷" id="div"><br>
+		<input type="button" value="4" id="k4"><input type="button" value="5" id="k5"><input type="button" value="6" id="k6"><input type="button" value="×" id="mul"><br>
+		<input type="button" value="7" id="k7"><input type="button" value="8" id="k8"><input type="button" value="9" id="k9"><input type="button" value="-" id="sub"><br>
+		<input type="button" value="0" id="k0"><input type="button" value="." id="dot"><input type="button" value="=" id="equal"><input type="button" value="+" id="add">
+	</div>
+	<div id="options">
+		<a href="#" id="showhistory">Historia ostatniego działania</a>
+	</div>
+	<div id="history"><span id="last"></span> <a href="#" id="delete">Usuń historię</a></div>
+</body>
+</html>
